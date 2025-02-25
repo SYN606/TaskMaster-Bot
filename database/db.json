@@ -1,3 +1,11 @@
 {
-    "prefix": "**"
+  "prefix": "**",
+  "activities": {
+    "577943155920601088": {
+      "activityType": "playing",
+      "activityName": "with noelle",
+      "startTime": 1740475220101,
+      "elapsedTime": 0
+    }
+  }
 }

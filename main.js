@@ -1,10 +1,10 @@
 import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
-import { readDB } from './database';  // Import the readDB function
-import dotenv from 'dotenv';  // Import dotenv for environment variables
-dotenv.config();  // Load environment variables
+import { readDB } from './database'; 
+import dotenv from 'dotenv';  
+dotenv.config();  
 
 // Import commands dynamically (make sure you're importing from the correct location)
-import commands from './commands'; // Ensure this imports all command files, including help
+import commands from './commands'; 
 import utilities from './utils';   // Import utilities
 
 const client = new Client({

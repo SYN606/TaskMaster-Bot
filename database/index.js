@@ -1,3 +1,3 @@
-import { readDB, writeDB } from "./db";
+import { readDB, writeDB, createData, updateData, readData, deleteData } from "./db";
 
-export { readDB, writeDB };
+export { readDB, writeDB, createData, updateData, readData, deleteData };

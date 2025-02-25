@@ -1,4 +1,4 @@
-const { readDB, writeDB } = require('../db'); 
+const { readDB, writeDB } = require('../database'); 
 
 module.exports = {
     name: 'changePrefix',

@@ -1,10 +1,11 @@
-import { Client, GatewayIntentBits } from 'discord.js';
-import { readDB } from './db';  
-require('dotenv').config();
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+import { readDB } from './database';  // Import the readDB function
+import dotenv from 'dotenv';  // Import dotenv for environment variables
+dotenv.config();  // Load environment variables
 
-// Dynamically import commands and utilities
-const commands = require('./commands');
-const utilities = require('./utils');
+// Import commands dynamically (make sure you're importing from the correct location)
+import commands from './commands'; // Ensure this imports all command files, including help
+import utilities from './utils';   // Import utilities
 
 const client = new Client({
     intents: [
@@ -16,7 +17,7 @@ const client = new Client({
 
 // Set the bot prefix from the database, default to '!' if not found
 const data = readDB();
-client.prefix = data?.prefix || '**'; // Use optional chaining for cleaner code
+client.prefix = data?.prefix || '!'; // Use optional chaining for cleaner code
 
 // Attach commands and utilities to the client
 client.commands = commands;
@@ -30,16 +31,36 @@ client.once('ready', () => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Ignore bot's own messages
 
-    // Ignore messages that don't start with the prefix
-    if (!message.content.startsWith(client.prefix)) return;
-
-    // Handle mentions (if bot is mentioned)
+    // Check if the bot is mentioned in the message
     if (message.mentions.has(client.user)) {
-        // Use the botInfo utility to send bot information
-        await client.utils.botInfo.execute(message, client);
+        // Fetch latency
+        const latency = Date.now() - message.createdTimestamp;
+        const apiLatency = Math.round(message.client.ws.ping);
+
+        // Get the current prefix
+        const currentPrefix = client.prefix;
+
+        // Create the embed message
+        const embed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('👋 Hello, I am TaskMaster Bot!')
+            .setDescription('Here is some information about me:')
+            .addFields(
+                { name: 'Developer', value: '606', inline: true },
+                { name: 'Prefix', value: currentPrefix, inline: true },
+                { name: 'Latency', value: `${latency}ms`, inline: true },
+                { name: 'API Latency', value: `${apiLatency}ms`, inline: true }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'TaskMaster Bot', iconURL: message.client.user.avatarURL() });
+
+        // Send the embed message
+        await message.channel.send({ embeds: [embed] });
     }
 
-    // Parse arguments from the message content
+    // If the message starts with the prefix, process commands
+    if (!message.content.startsWith(client.prefix)) return;
+
     const args = message.content.slice(client.prefix.length).trim().split(/ +/); 
     const commandName = args.shift().toLowerCase(); // Get the command name
 

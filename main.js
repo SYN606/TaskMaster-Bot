@@ -1,8 +1,10 @@
 import { Client, GatewayIntentBits } from 'discord.js';
-import { readDB } from './utils';  
-import fs from 'fs';
-import path from 'path';
+import { readDB } from './db';  
 require('dotenv').config();
+
+// Dynamically import commands and utilities
+const commands = require('./commands');
+const utilities = require('./utils');
 
 const client = new Client({
     intents: [
@@ -12,18 +14,13 @@ const client = new Client({
     ]
 });
 
-// Set a default prefix (fallback to '!' if db is empty or unavailable)
-let data = readDB();
-client.prefix = data ? data.prefix : '!';
+// Set the bot prefix from the database, default to '!' if not found
+const data = readDB();
+client.prefix = data?.prefix || '**'; // Use optional chaining for cleaner code
 
-// Load commands dynamically from the commands folder
-client.commands = {};
-const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands[command.name] = command;
-}
+// Attach commands and utilities to the client
+client.commands = commands;
+client.utils = utilities;
 
 client.once('ready', () => {
     console.log('TaskMaster bot is online!');
@@ -33,18 +30,26 @@ client.once('ready', () => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return; // Ignore bot's own messages
 
-    // Check if the message starts with the prefix
+    // Ignore messages that don't start with the prefix
     if (!message.content.startsWith(client.prefix)) return;
 
-    const args = message.content.slice(client.prefix.length).trim().split(/ +/); // Split arguments
+    // Handle mentions (if bot is mentioned)
+    if (message.mentions.has(client.user)) {
+        // Use the botInfo utility to send bot information
+        await client.utils.botInfo.execute(message, client);
+    }
+
+    // Parse arguments from the message content
+    const args = message.content.slice(client.prefix.length).trim().split(/ +/); 
     const commandName = args.shift().toLowerCase(); // Get the command name
 
-    // Check if the command exists
-    if (!client.commands[commandName]) return;
+    // If the command exists, execute it
+    const command = client.commands[commandName];
+    if (!command) return;
 
     try {
         // Execute the command
-        await client.commands[commandName].execute(message, args);
+        await command.execute(message, args);
     } catch (error) {
         console.error(error);
         message.reply('There was an error trying to execute that command!');

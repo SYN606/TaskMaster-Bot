@@ -5,7 +5,12 @@ from utils.database.afk import set_afk, remove_afk, get_afk
 from utils.config import EMOJIS
 
 from datetime import datetime, timezone
+from typing import Optional  # <-- Import Optional to use with typing
 
+import logging
+
+# Logger for debugging
+logger = logging.getLogger(__name__)
 
 class AFK(commands.Cog):
 
@@ -16,9 +21,10 @@ class AFK(commands.Cog):
         name="afk", description="Set your AFK status with an optional reason.")
     @app_commands.describe(reason="The reason why you're AFK.")
     async def afk_command(self, ctx: commands.Context, *, reason: str = "AFK"):
+        """Sets the user as AFK and updates the database."""
         timestamp = datetime.now(timezone.utc)
 
-        previous_nick = None
+        previous_nick: Optional[str] = None
         if isinstance(ctx.author, discord.Member) and ctx.guild:
             previous_nick = ctx.author.nick or ctx.author.name
             try:
@@ -26,20 +32,22 @@ class AFK(commands.Cog):
             except discord.Forbidden:
                 pass  # Not enough permissions
 
+        # Set AFK in the database
         await set_afk(user_id=ctx.author.id,
-                      guild_id=ctx.guild.id, # type: ignore
+                      guild_id=ctx.guild.id,  # type: ignore
                       reason=reason,
-                      timestamp=timestamp,
+                      timestamp=timestamp, # type: ignore
                       previous_nick=previous_nick or "")
 
         embed = discord.Embed(
             description=f"{EMOJIS['dot']} You are now marked as AFK.\n"
             f"{EMOJIS['reply']} **Reason:** {reason}",
             color=discord.Color.orange())
-        await ctx.reply(embed=embed, mention_author=False)
+        await ctx.reply(embed=embed, mention_author=False)  # Use ctx.reply instead of ctx.send for hybrid commands
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        """Listens to messages and handles AFK status removal and mention notifications."""
         if message.author.bot or not message.guild:
             return
 
@@ -71,8 +79,7 @@ class AFK(commands.Cog):
                 afk = await get_afk(user.id, message.guild.id)
                 if afk:
                     reason = afk.get("reason", "AFK")
-                    timestamp = afk.get("timestamp",
-                                        datetime.now(timezone.utc))
+                    timestamp = afk.get("timestamp", datetime.now(timezone.utc))
                     duration = datetime.now(timezone.utc) - timestamp
 
                     embed = discord.Embed(
@@ -83,6 +90,6 @@ class AFK(commands.Cog):
                     await message.channel.send(embed=embed)
                     break
 
-
 async def setup(bot):
+    """Setup function for loading the cog."""
     await bot.add_cog(AFK(bot))

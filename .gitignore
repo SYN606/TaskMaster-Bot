@@ -1,8 +1,70 @@
-env/
-.env
-venv
-
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyd 
+*.py[cod]
+*$py.class
 
+# Virtual environment
+venv/
+.env/
+.venv/
+ENV/
+env/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# MacOS / Linux / Windows system files
+.DS_Store
+Thumbs.db
+
+# Python stuff
+*.log
+*.sqlite3
+*.db
+*.pkl
+
+# Environment variables
+.env
+.env.*
+
+# Node/npm junk if you ever use a dashboard
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Migrations / database junk
+migrations/
+__migrations__/
+
+# Caches
+.cache/
+.pytest_cache/
+
+# Test coverage reports
+htmlcov/
+coverage.xml
+.tox/
+nosetests.xml
+test-reports/
+
+# Discord specific
+logs/
+settings.json
+*.pem
+
+# Ignore local config folders
+config.json
+/secrets/
+tokens.json
+
+# Ignore compiled protos or grpc files (if any)
+*.pb.go
+*.pb.py
+
+
+# MongoDB dump
+dump/
+*.bson
+*.metadata.json

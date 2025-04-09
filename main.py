@@ -4,18 +4,16 @@ import traceback
 from discord.ext import commands
 from utils.config import DISCORD_TOKEN
 from utils.database.prefix import get_prefix
-from cogs.cogs import load_cogs  # Auto-loader
-from utils.database.categories import (
-    is_command_disabled, 
-    is_category_disabled  # Import function to check if a category is disabled
-)
+from cogs.cogs import load_cogs
+from utils.database.categories import (is_command_disabled,
+                                       is_category_disabled)
 from utils.config import EMOJIS
-
 
 # Intents setup
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
+intents.members = True  
 
 # Bot instance
 bot = commands.Bot(command_prefix=get_prefix,
@@ -41,59 +39,50 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    # Ignore messages from other bots
     if message.author.bot:
         return
 
-    # Get the prefix for the server
-    prefix = await get_prefix(bot, message)
+    # Get prefix
+    prefix = await get_prefix(bot, message)  # type: ignore
 
-    # Check if the message is a command
     if message.content.startswith(prefix):
-        command_name = message.content[len(prefix):].split()[0]  # Extract command name
-
-        # Check if the command is disabled for the current guild
+        command_name = message.content[len(prefix):].split()[0]
         is_disabled = await is_command_disabled(message.guild.id, command_name)
-
-        # Get the command object
         command = bot.get_command(command_name)
+
         if command and command.cog:
-            # Get the category (cog) the command belongs to
-            cog_name = command.cog_name.lower() # type: ignore
-
-            # Check if the category is disabled
-            is_category_disabled_result = await is_category_disabled(message.guild.id, cog_name)
-
-            if is_category_disabled_result:
-                # Send an embed informing the user that the category is disabled
+            cog_name = command.cog_name.lower()  # type: ignore
+            if await is_category_disabled(message.guild.id, cog_name):
                 embed = discord.Embed(
                     title=f"{EMOJIS['fail']} Category Disabled",
-                    description=f"The category `{cog_name}` is currently disabled in this server.\n"
-                                f"Commands in this category are unavailable.",
-                    color=discord.Color.red()
-                )
+                    description=
+                    f"The category `{cog_name}` is currently disabled in this server.\n"
+                    f"Commands in this category are unavailable.",
+                    color=discord.Color.red())
                 return await message.channel.send(embed=embed)
 
-        # If the command is disabled, prevent it from being processed
         if is_disabled:
             embed = discord.Embed(
                 title=f"{EMOJIS['fail']} Command Disabled",
-                description=f"The command `{command_name}` is currently disabled in this server.",
-                color=discord.Color.red()
-            )
+                description=
+                f"The command `{command_name}` is currently disabled in this server.",
+                color=discord.Color.red())
             return await message.channel.send(embed=embed)
 
-    # Check if the message mentions the bot and provide the bot's prefix and latency
     if bot.user in message.mentions:
-        latency = round(bot.latency * 1000)  # Latency in ms
+        latency = round(bot.latency * 1000)
         embed = discord.Embed(
             title="🤖 Bot Prefix",
             description=f"My prefix here is `{prefix}`\nLatency: `{latency}ms`",
             color=discord.Color.blurple())
         await message.channel.send(embed=embed)
 
-    # Continue processing commands
     await bot.process_commands(message)
+
+    for cog in bot.cogs.values():
+        on_message = getattr(cog, "on_message", None)
+        if callable(on_message):
+            await on_message(message) # type: ignore
 
 
 async def main():

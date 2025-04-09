@@ -1,5 +1,4 @@
 import os
-import importlib.util
 
 
 async def load_cogs(bot):

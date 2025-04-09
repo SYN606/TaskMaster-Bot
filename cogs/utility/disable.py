@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from utils.database.categories import (disable_command, enable_command,
                                        is_command_disabled, disable_category,

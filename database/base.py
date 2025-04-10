@@ -1,7 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
-from ..config import DEFAULT_PREFIX
+from utils.config import DEFAULT_PREFIX
 
 load_dotenv()
 

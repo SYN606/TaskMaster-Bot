@@ -1,5 +1,5 @@
 from .base import init_guild, get_config, update_config  # type: ignore
-from ..config import DEFAULT_PREFIX
+from utils.config import DEFAULT_PREFIX
 
 
 async def get_prefix(bot, message):

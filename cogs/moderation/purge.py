@@ -5,7 +5,7 @@ from typing import Optional
 from utils.config import EMOJIS
 
 
-class Moderation(commands.Cog):
+class Purge(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -17,6 +17,7 @@ class Moderation(commands.Cog):
         amount="Number of messages to delete (max 100)",
         member="Only delete messages from this user (optional)")
     @commands.has_permissions(manage_messages=True)
+    @commands.bot_has_permissions(manage_messages=True)
     async def purge(self,
                     ctx: commands.Context,
                     amount: int,
@@ -28,20 +29,19 @@ class Moderation(commands.Cog):
 
         if amount < 1 or amount > 100:
             return await ctx.reply(
-                f"{EMOJIS['mc_diamond_shovel']}Please choose a number between 1 and 100.",
+                f"{EMOJIS['fail']} Please choose a number between 1 and 100.",
                 ephemeral=True)
 
-        def check(msg):
+        def check(msg: discord.Message):
             return not member or msg.author == member
 
-        deleted = await ctx.channel.purge(limit=amount + 1, check=check
-                                          )
+        deleted = await ctx.channel.purge(limit=amount + 1, check=check)
 
         embed = discord.Embed(
             description=
-            f"{EMOJIS['success']} Deleted `{len(deleted)-1}` messages.",
+            f"{EMOJIS['success']} Deleted `{len(deleted) - 1}` message(s).",
             color=discord.Color.red())
-        await ctx.send(embed=embed, delete_after=5) # type: ignore
+        await ctx.send(embed=embed, delete_after=5)
 
     @purge.error
     async def purge_error(self, ctx, error):
@@ -49,12 +49,10 @@ class Moderation(commands.Cog):
             await ctx.reply(
                 f"{EMOJIS['fail']} You need the **Manage Messages** permission to use this command.",
                 ephemeral=True)
-            
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.reply(
-                f"{EMOJIS['red_dot']} You need to specify how many messages to delete. Example: `--purge 10`",
+                f"{EMOJIS['red_dot']} You must specify how many messages to delete. Example: `/purge 10`",
                 ephemeral=True)
-            
         else:
             await ctx.reply(
                 f"{EMOJIS['fail']} An unexpected error occurred: `{type(error).__name__}`",
@@ -62,4 +60,4 @@ class Moderation(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Moderation(bot))
+    await bot.add_cog(Purge(bot))

@@ -11,18 +11,26 @@ class UntimeoutCommand(commands.Cog):
     @commands.hybrid_command(name="untimeout",
                              description="Remove timeout from a user.")
     @commands.has_permissions(moderate_members=True)
+    @commands.bot_has_permissions(moderate_members=True)
+    @commands.guild_only()
     async def untimeout(self,
                         ctx: commands.Context,
                         member: discord.Member,
                         *,
                         reason: str = "Timeout removed"):
+        if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner:  # type: ignore
+            return await ctx.send(embed=discord.Embed(
+                description=
+                f"{EMOJIS['fail']} You can't untimeout someone with an equal or higher role.",
+                color=discord.Color.red()))
+
         try:
-            await member.timeout(None
-                                 )  
+            await member.timeout(None, reason=reason)
 
             embed = discord.Embed(
                 title=f"{EMOJIS['success']} Timeout Removed",
-                description=f"{member.mention} has been un-timed out.",
+                description=
+                f"{EMOJIS['green_dot']} {member.mention} is no longer timed out.",
                 color=discord.Color.green())
             embed.add_field(name="Reason", value=reason, inline=False)
             embed.set_footer(text=f"Issued by {ctx.author}",

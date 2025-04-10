@@ -8,13 +8,25 @@ WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 DEFAULT_PREFIX = "--"
 
 EMOJIS = {
-    "fail": "<:fail:1357256726088515767>",
-    "mc_diamond": "<:mc_diamond:1357255945650180219>",
-    "mc_diamond_shovel": "<:mc_diamond_shovel:1357256027665465354>",
-    "mc_emerald": "<:mc_emerald:1357256031696191618>",
     "mc_heart": "<:mc_heart:1357256039623295066>",
-    "success": "<:success:1357256962798256248>",
-    "pepe_ping": "<:pepe_ping:1357983973380198565>",
-    "red_dot": "<:red_dot:1357983970234466345>",
-    "green_dot": "<:green_dot:1357983967042605129>"
+    "multiple_peeps_stare": "<:multiple_peeps_stare:1359624519677120752>",
+    "avatar": "<:avatar:1359624536085102712>",
+    "enjoy": "<:enjoy:1359624502811689150>",
+
+     "announce": "<a:announce:1138564633721049098>",
+    "arrow_point": "<a:arrow_point:1359629780424851567>",
+    "ban": "<a:ban:1359630227445256405>",
+    "boost": "<a:boost:1359631460398534796>",
+    "developer": "<a:developer:1359626493713453199>",
+    "fail": "<a:fail:1359630009613947011>",
+    "green_dot": "<a:green_dot:1359633941245722839>",
+    "okay": "<a:okay:1359630397981331707>",
+    "ping": "<a:ping:1359631105333919937>",
+    "red_dot": "<a:red_dot:1359633914112774406>",
+    "success": "<a:success:1359630048302334145>", 
+    "valorant": "<a:valorant:1359630998010069062>",
+    "nahi": "<:nahi:1359632467924881588>",
+    "hora": "<:hora:1359632509251489984>",
+    "kya": "<:kya:1359632533087584436>",
+    "moderation": "<:moderation:1359630332747321585>"
 }

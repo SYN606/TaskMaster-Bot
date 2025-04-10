@@ -19,17 +19,32 @@ class Ban(commands.Cog):
                   user: discord.User,
                   *,
                   reason: str = "No reason provided."):
-        member = ctx.guild.get_member(user.id) # type: ignore
+        member = ctx.guild.get_member(user.id)  # type: ignore
 
-        # Permission & role hierarchy check
         if member:
-            if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner: # type: ignore
+            if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner:  # type: ignore
                 return await ctx.send(
                     f"{EMOJIS['fail']} You can't ban someone with an equal or higher role than you."
                 )
 
         try:
-            await ctx.guild.ban(user, reason=reason, delete_message_days=0) # type: ignore
+            dm_embed = discord.Embed(
+                title=f"{EMOJIS['ban']} You have been banned",
+                description=(
+                    f"You were banned from **{ctx.guild.name}**.\n"  # type: ignore
+                    f"**Reason:** {reason}"),
+                color=discord.Color.red())
+            dm_embed.set_footer(text=f"Issued by {ctx.author}",
+                                icon_url=ctx.author.display_avatar.url)
+            await user.send(embed=dm_embed)
+        except discord.Forbidden:
+            pass
+        except Exception as e:
+            await ctx.send(f"{EMOJIS['fail']} Failed to send DM: `{e}`")
+
+        try:
+            await ctx.guild.ban(  # type: ignore
+                user, reason=reason, delete_message_days=0)
         except discord.Forbidden:
             return await ctx.send(
                 f"{EMOJIS['fail']} I don't have permission to ban that user.")
@@ -39,7 +54,8 @@ class Ban(commands.Cog):
 
         embed = discord.Embed(
             title=f"{EMOJIS['success']} User Banned",
-            description=f"**{user}** has been banned.\n**Reason:** {reason}",
+            description=(f"{EMOJIS['red_dot']} **User:** {user.mention}\n"
+                         f"{EMOJIS['ping']} **Reason:** {reason}"),
             color=discord.Color.red())
         await ctx.send(embed=embed)
 

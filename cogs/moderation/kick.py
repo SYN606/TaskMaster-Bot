@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from utils.config import EMOJIS 
+from utils.config import EMOJIS
 
 
 class Kick(commands.Cog):
@@ -19,41 +19,44 @@ class Kick(commands.Cog):
                    user: discord.User,
                    *,
                    reason: str = "No reason provided."):
-        member = ctx.guild.get_member(user.id) # type: ignore
+        member = ctx.guild.get_member(user.id)  # type: ignore
 
-        if member is None:
-            try:
-                await ctx.guild.kick(user, reason=reason) # type: ignore
-            except discord.Forbidden:
+        # Role hierarchy check if member exists
+        if member:
+            if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner:  # type: ignore
                 return await ctx.send(
-                    f"{EMOJIS['fail']} I don't have permission to kick that user."
+                    f"{EMOJIS['fail']} You can't kick someone with an equal or higher role than you."
                 )
-            except Exception as e:
-                return await ctx.send(f"{EMOJIS['fail']} Error: `{str(e)}`")
 
-            embed = discord.Embed(
-                title=f"{EMOJIS['success']} User Kicked",
-                description=f"**{user}** was kicked.\n**Reason:** {reason}",
-                color=discord.Color.red())
-            return await ctx.send(embed=embed)
-
-        if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner: # type: ignore
-            return await ctx.send(
-                f"{EMOJIS['fail']} You can't kick someone with an equal or higher role than you."
-            )
-
+        # Attempt to DM the user before kicking
         try:
-            await member.kick(reason=reason)
+            dm_embed = discord.Embed(
+                title=f"{EMOJIS['announce']} You have been kicked",
+                description=(f"You were kicked from **{ctx.guild.name}**.\n" # type: ignore
+                             f"**Reason:** {reason}"),
+                color=discord.Color.orange())
+            dm_embed.set_footer(text=f"Issued by {ctx.author}",
+                                icon_url=ctx.author.display_avatar.url)
+            await user.send(embed=dm_embed)
+        except discord.Forbidden:
+            pass  # User has DMs closed or blocked bot
+        except Exception as e:
+            await ctx.send(f"{EMOJIS['fail']} Couldn't send DM: `{e}`")
+
+        # Try kicking the member (if still in guild)
+        try:
+            await ctx.guild.kick(user, reason=reason)  # type: ignore
         except discord.Forbidden:
             return await ctx.send(
-                f"{EMOJIS['fail']} I don't have permission to kick that member."
-            )
+                f"{EMOJIS['fail']} I don't have permission to kick that user.")
         except Exception as e:
             return await ctx.send(f"{EMOJIS['fail']} Error: `{str(e)}`")
 
+        # Success embed
         embed = discord.Embed(
-            title=f"{EMOJIS['success']} Member Kicked",
-            description=f"**{member}** was kicked.\n**Reason:** {reason}",
+            title=f"{EMOJIS['success']} User Kicked",
+            description=(f"{EMOJIS['red_dot']} **User:** {user.mention}\n"
+                         f"{EMOJIS['ping']} **Reason:** {reason}"),
             color=discord.Color.red())
         await ctx.send(embed=embed)
 

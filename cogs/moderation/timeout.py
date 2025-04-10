@@ -9,47 +9,65 @@ class TimeoutCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def parse_duration(self, duration: str):
+    def parse_duration(self, duration: str) -> timedelta | None:
         unit = duration[-1]
         try:
             value = int(duration[:-1])
         except ValueError:
             return None
 
-        if unit == "d":
-            return timedelta(days=value)
-        elif unit == "h":
-            return timedelta(hours=value)
-        elif unit == "m":
-            return timedelta(minutes=value)
-        elif unit == "s":
-            return timedelta(seconds=value)
+        match unit:
+            case "d":
+                return timedelta(days=value)
+            case "h":
+                return timedelta(hours=value)
+            case "m":
+                return timedelta(minutes=value)
+            case "s":
+                return timedelta(seconds=value)
         return None
 
     @commands.hybrid_command(
         name="timeout", description="Timeout a user for a specific duration.")
     @commands.has_permissions(moderate_members=True)
+    @commands.bot_has_permissions(moderate_members=True)
+    @commands.guild_only()
     async def timeout(self,
                       ctx: commands.Context,
                       member: discord.Member,
                       duration: str = "1d",
                       *,
-                      reason: str = None): # type: ignore
-        try:
-            delta = self.parse_duration(duration)
-            if not delta:
-                embed = discord.Embed(
-                    title=f"{EMOJIS['fail']} Invalid Time Format",
-                    description="Use formats like `1d`, `2h`, `30m`, `10s`.",
-                    color=discord.Color.red())
-                await ctx.send(embed=embed)
-                return
+                      reason: str = "No reason provided."):
+        if member.top_role >= ctx.author.top_role and ctx.author != ctx.guild.owner: # type: ignore
+            return await ctx.send(embed=discord.Embed(
+                description=
+                f"{EMOJIS['fail']} You can't timeout someone with an equal or higher role.",
+                color=discord.Color.red()))
 
-            reason = reason or f"Muted for {duration}"
-            await member.timeout(delta)
+        delta = self.parse_duration(duration)
+        if not delta:
+            return await ctx.send(embed=discord.Embed(
+                title=f"{EMOJIS['fail']} Invalid Time Format",
+                description="Use time formats like `1d`, `2h`, `30m`, `10s`.",
+                color=discord.Color.red()))
+
+        # Attempt to DM user
+        try:
+            dm_embed = discord.Embed(
+                title=f"{EMOJIS['announce']} You have been timed out!",
+                description=
+                f"You were timed out in **{ctx.guild.name}** for `{duration}`.", # type: ignore
+                color=discord.Color.orange())
+            dm_embed.add_field(name="Reason", value=reason, inline=False)
+            await member.send(embed=dm_embed)
+        except Exception:
+            pass  # DMs closed or blocked — safe to ignore
+
+        try:
+            await member.timeout(delta, reason=reason)
 
             embed = discord.Embed(
-                title=f"{EMOJIS['success']} Timeout Successful",
+                title=f"{EMOJIS['success']} Timeout Issued",
                 description=
                 f"{member.mention} has been timed out for `{duration}`.",
                 color=discord.Color.green())

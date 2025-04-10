@@ -2,14 +2,14 @@ import discord
 from discord.ext import commands
 import aiohttp
 import os
-from utils.config import EMOJIS
+from utils.config import EMOJIS, WEATHER_API_KEY
 
 
 class Weather(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv("WEATHERAPI_KEY")
+        self.api_key = WEATHER_API_KEY
 
         if not self.api_key:
             print(
@@ -18,7 +18,10 @@ class Weather(commands.Cog):
 
     @commands.hybrid_command(name="weather",
                              description="Get weather information for a city.")
-    async def fetch_weather(self, ctx: commands.Context, *, city: str = None): # type: ignore
+    async def fetch_weather(self,
+                            ctx: commands.Context,
+                            *,
+                            city: str = None):  # type: ignore
         if not self.api_key:
             return await ctx.send(
                 f"{EMOJIS['fail']} Weather API key is missing. Contact the bot owner."

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from database.prefix import set_prefix
+from database.prefix_db import set_prefix
 from utils.config import EMOJIS
 
 

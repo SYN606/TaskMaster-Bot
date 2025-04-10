@@ -1,4 +1,4 @@
-from .base import init_guild, get_config, update_config  # type: ignore
+from .base_db import init_guild, get_config, update_config  # type: ignore
 from utils.config import DEFAULT_PREFIX
 
 

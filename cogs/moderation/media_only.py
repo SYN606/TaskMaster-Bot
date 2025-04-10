@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from database.base import get_config, update_config
+from database.base_db import get_config, update_config
 from utils.config import EMOJIS
 
 

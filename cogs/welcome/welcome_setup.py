@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from database.welcome import get_welcome_config
+from database.welcome_db import get_welcome_config
 from utils.config import EMOJIS
 
 

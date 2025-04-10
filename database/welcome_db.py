@@ -1,4 +1,4 @@
-from .base import db
+from .base_db import db
 
 
 async def set_welcome_config(guild_id,

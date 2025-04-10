@@ -56,7 +56,7 @@ class HelpCommand(commands.Cog):
         embed = discord.Embed(
             title="📚 Command Help",
             description=
-            "Use `/help <command>` or `!help <command>` to get more info.",
+            "Use `/help <command>` or `--help <command>` to get more info.",
             color=discord.Color.blurple())
 
         for category, cmds in sorted(categories.items()):

@@ -4,7 +4,7 @@ import traceback
 from discord.ext import commands
 
 from utils.config import DISCORD_TOKEN
-from database.prefix import get_prefix
+from database.prefix_db import get_prefix
 from cogs_laoder import load_cogs
 
 # Intents setup
@@ -40,7 +40,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    prefix = await get_prefix(bot, message)
+    prefix = await get_prefix(bot, message)  # type: ignore
 
     if bot.user in message.mentions:
         latency = round(bot.latency * 1000)
@@ -55,7 +55,11 @@ async def on_message(message):
     for cog in bot.cogs.values():
         on_message = getattr(cog, "on_message", None)
         if callable(on_message):
-            await on_message(message)  # type: ignore
+            try:
+                await on_message(message)  # type: ignore
+            except Exception as e:
+                print(f"❌ Error in {cog.__class__.__name__}.on_message: {e}")
+                traceback.print_exc()
 
 
 async def main():
